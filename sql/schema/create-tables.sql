@@ -1,4 +1,3 @@
-
 /*******************************************************************************
    Basic Ecommerce Database
    Script: ./sql/schema/create-tables.sql
