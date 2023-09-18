@@ -11,6 +11,7 @@
 ********************************************************************************/
 
 CREATE TYPE country_code AS ENUM ('it', 'uk', 'eu');
+CREATE TYPE product_status AS ENUM ('available', 'not_available');
 CREATE TYPE order_status AS ENUM ('created', 'shipped', 'refused', 'completed');
 CREATE TYPE payment_status AS ENUM ('pending', 'confirmed', 'declined', 'refunded');
 
@@ -24,8 +25,11 @@ CREATE TABLE "products" (
     "name" varchar(255) NOT NULL,
     "description" text,
     "category_id" integer,
+    "main_photo_id" integer,
     "tags" varchar(20)[],
     "price" numeric(8, 2) NOT NULL,
+    "discount_price" numeric(8, 2),
+    "status" product_status NOT NULL DEFAULT 'available',
     "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamp,
     "deleted_at" timestamp
@@ -33,7 +37,7 @@ CREATE TABLE "products" (
 
 CREATE TABLE "product_photos" (
     "id" serial PRIMARY KEY,
-    "product_id" integer NOT NULL,
+    "product_id" integer,
     "url" text NOT NULL UNIQUE,
     "caption" varchar(255)
 );
@@ -53,6 +57,7 @@ CREATE TABLE "users" (
     "google_id" varchar(255),
     "google_token" text,
     "is_admin" boolean NOT NULL DEFAULT false,
+    "default_address" integer,
     "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -67,7 +72,6 @@ CREATE TABLE "shipping_addresses" (
     "country" country_code NOT NULL DEFAULT 'it',
     "phone_number" varchar(50) NOT NULL,
     "notes" varchar(255),
-    "is_default" boolean NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" timestamp,
     CONSTRAINT unique_shipping_address UNIQUE ("id", "user_id")
@@ -78,6 +82,7 @@ CREATE TABLE "orders" (
     "user_id" integer NOT NULL,
     "status" order_status NOT NULL,
     "address_id" integer NOT NULL,
+    "total_amount" numeric(8, 2) NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamp
 );
@@ -86,6 +91,7 @@ CREATE TABLE "order_items" (
     "id" serial PRIMARY KEY,
     "order_id" integer NOT NULL,
     "product_id" integer NOT NULL,
+    "product_name" varchar(255) NOT NULL,
     "quantity" integer NOT NULL,
     "price_per_item" numeric(8, 2) NOT NULL,
     CONSTRAINT unique_order_item UNIQUE (order_id, product_id)
@@ -138,11 +144,15 @@ CREATE TABLE "error_log" (
    Create Foreign Keys
 ********************************************************************************/
 
+ALTER TABLE "users"
+    ADD FOREIGN KEY ("default_address") REFERENCES "shipping_addresses" ("id") ON DELETE SET NULL;
+
 ALTER TABLE "product_photos"
     ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "products"
-    ADD FOREIGN KEY ("category_id") REFERENCES "categories" ("id") ON DELETE SET NULL;
+    ADD FOREIGN KEY ("category_id") REFERENCES "categories" ("id") ON DELETE SET NULL,
+    ADD FOREIGN KEY ("main_photo_id") REFERENCES "product_photos" ("id") ON DELETE SET NULL;
 
 ALTER TABLE "categories"
     ADD FOREIGN KEY ("parent_id") REFERENCES "categories" ("id") ON DELETE SET NULL;
@@ -156,11 +166,11 @@ ALTER TABLE "orders"
 
 ALTER TABLE "order_items"
     ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("id") ON DELETE CASCADE,
-    ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE RESTRICT;
+    ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE SET NULL;
 
 ALTER TABLE "cart_items"
     ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
-    ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE RESTRICT;
+    ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE SET NULL;
 
 ALTER TABLE "payments"
     ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,

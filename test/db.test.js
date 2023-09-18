@@ -1,3 +1,5 @@
+/* eslint no-undef: 0 */
+
 const assert = require('assert');
 const { query } = require('../db');
 
@@ -9,8 +11,11 @@ const tablesToCheck = [
       'name',
       'description',
       'category_id',
+      'main_photo_id',
       'tags',
       'price',
+      'discount_price',
+      'status',
       'created_at',
       'updated_at',
       'deleted_at',
@@ -35,6 +40,7 @@ const tablesToCheck = [
       'google_id',
       'google_token',
       'is_admin',
+      'default_address',
       'created_at',
     ],
   },
@@ -51,7 +57,6 @@ const tablesToCheck = [
       'country',
       'phone_number',
       'notes',
-      'is_default',
       'created_at',
       'deleted_at',
     ],
@@ -63,6 +68,7 @@ const tablesToCheck = [
       'user_id',
       'status',
       'address_id',
+      'total_amount',
       'created_at',
       'updated_at',
     ],
@@ -73,6 +79,7 @@ const tablesToCheck = [
       'id',
       'order_id',
       'product_id',
+      'product_name',
       'quantity',
       'price_per_item',
     ],

@@ -1,0 +1,276 @@
+openapi: 3.0.3
+info:
+  title: Basic Ecommerce API
+  version: 1.0.0
+  description: A basic API for a sample ecommerce.
+paths:
+  /products:
+    get:
+      tags:
+        - products
+      summary: Get a list of products
+      description: Retrieve a list of products, by page, price, tag and category
+      operationId: getProducts
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          required: false
+          description: If not present or page=-1 no pagination will be generated
+        - in: query
+          name: tags
+          schema:
+            type: array
+            items:
+              type: string
+          required: false
+          description: Will retrieve only the specified tags
+        - in: query
+          name: catId
+          schema:
+            type: integer
+          required: false
+          description: Category Id of products to retrieve
+        - in: query
+          name: priceFrom
+          schema:
+            type: number
+          required: false
+          description: Start value of the price range to retrieve.
+        - in: query
+          name: priceTo
+          schema:
+            type: number
+          required: false
+          description: End value of the price range to retrieve
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          required: false
+          description: Max number of items to retrieve
+        - in: query
+          name: gallery
+          schema:
+            type: boolean
+          description: Retrieve extra gallery photos
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    post:
+      tags:
+        - products
+      summary: Add a new product to the store
+      description: Add a new product to the store
+      operationId: addProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Ionic Hair Dryer, DOOAIR 1875W Blow Dryer"
+                description:
+                  type: string
+                  example: "Professional-grade ion technology diffuser hair dryer creates a protective film on the surface of each hair, preventing heat damage and adding shine."
+                category_id:
+                  type: integer
+                  example: 1
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example: ["DOOAIR", "Ionic"]
+                price:
+                  type: number
+                  example: 66.45
+                discount_price:
+                  type: number
+                  example: 49.99
+                status:
+                  type: string
+                  enum:
+                    - available
+                    - not_available
+                main_photo_id:
+                  type: integer
+                  example: 5
+                gallery_photos_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example: [7, 9, 12]
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '405':
+          description: Invalid input
+
+  /products/{productId}:
+    parameters:
+      - name: productId
+        in: path
+        description: ID of product to return
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - products
+      summary: Find product by id
+      description: Find product by id
+      operationId: getProductById
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Product not found
+    put:
+      tags:
+        - products
+      summary: Update an existing product
+      description: Update an existing product
+      operationId: updateProduct
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+        '405':
+          description: Validation exception
+    delete:
+      tags:
+        - products
+      summary: Delete a product
+      description: Deletes a product from the store. A soft delete will be performed to preserve any references integrity.
+      operationId: deleteProduct
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_id:
+                    type: integer
+                    example: 5
+
+  /photos:
+    post:
+      tags:
+        - photos
+      summary: Uploads a photo
+      description: Uploads a photo with unassigned product id, useful when creating a product for the first time.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: string
+              example: //todo
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+components:
+  schemas:
+  
+    Photo:
+      type: object
+      properties:
+        id: 
+          type: string
+          example: 5
+        url:
+          type: string
+          example: 'https://bucket1.s3.us-west-2.amazonaws.com/dryer.png'
+        caption:
+          type: string
+          example: 'DOOAIR 1875W Blow Dryer'   
+          
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: 'Hair Dryers'
+        parent:
+          type: object
+          example: { id: 1, name: Electronics, parent: null }
+          
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        name: 
+          type: string
+          example: 'Ionic Hair Dryer, DOOAIR 1875W Blow Dryer'
+        description:
+          type: string
+          example: 'Professional-grade ion technology diffuser hair dryer creates a protective film on the surface of each hair, preventing heat damage and adding shine.'
+        category:
+          $ref: '#/components/schemas/Category'
+        tags:
+          type: array
+          items:
+            type: string
+          example: ['DOOAIR', 'Ionic']
+        price:
+          type: number
+          example: 66.45
+        discount_price:
+          type: number
+          example: 49.99
+        status:
+          type: string
+          enum:
+            - available
+            - not_available
+        main_photo:
+          $ref: '#/components/schemas/Photo'
+        gallery_photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+          example: [...]
+        rating_avg:
+          type: number
+          example: 4.5
+        created_at:
+          type: string
+          example: '2022-09-18T17:10'
+        updated_at:
+          type: string
+          example: '2022-09-20T18:21'
