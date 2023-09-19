@@ -39,9 +39,22 @@ const tablesToCheck = [
       'password',
       'google_id',
       'google_token',
-      'is_admin',
       'default_address',
       'created_at',
+    ],
+  },
+  {
+    tableName: 'admins',
+    expectedColumns: ['user_id'],
+  },
+  {
+    tableName: 'shipping_fees',
+    expectedColumns: [
+      'id',
+      'method',
+      'fee',
+      'country',
+      'postal_code',
     ],
   },
   {
@@ -68,6 +81,7 @@ const tablesToCheck = [
       'user_id',
       'status',
       'address_id',
+      'shipping_fee',
       'total_amount',
       'created_at',
       'updated_at',

@@ -51,10 +51,10 @@ paths:
           required: false
           description: Max number of items to retrieve
         - in: query
-          name: gallery
+          name: extended
           schema:
             type: boolean
-          description: Retrieve extra gallery photos
+          description: Retrieve an extended version of the product object
       responses:
         '200':
           description: Successful operation
@@ -63,7 +63,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Product'
+                  $ref: '#/components/schemas/ProductShort'
     post:
       tags:
         - products
@@ -185,7 +185,7 @@ paths:
       tags:
         - photos
       summary: Uploads a photo
-      description: Uploads a photo with unassigned product id, useful when creating a product for the first time.
+      description: Uploads a photo with an unassigned product ID, useful when creating a product for the first time.
       requestBody:
         content:
           multipart/form-data:
@@ -199,15 +199,327 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Photo'
+
+  /photos/{photoId}:
+    parameters:
+      - name: photoId
+        in: path
+        description: ID of a photo
+        required: true
+        schema:
+          type: integer
+    delete:
+      summary: Delete a photo by id
+      description: Delete a photo by id
+      tags:
+        - photos
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: photo id not found
+
+  /reviews/{productId}:
+    parameters:
+      - name: productId
+        in: path
+        description: ID of the reviewed product to retrieve
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - reviews
+      summary: Get a paginated list of reviews for a product
+      description: Get a paginated list of reviews for a product
+      operationId: getReviews
+      parameters:
+        - in: query
+          name: rating
+          schema:
+            type: integer
+          required: false
+          description: Will retrieve only the reviews having this rating
+      responses: 
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid parameters
+        '404':
+          description: Product Id not found
+    post:
+      tags:
+        - reviews
+      summary: Add a new review to a product
+      description: Add a new review to a product
+      operationId: postReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+                rating:
+                  type: integer
+                  example: 5
+                description:
+                  type: string
+                  example: 'Best hairblower ever!'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '405':
+          description: validation exception
+        '404':
+          description: product id not found
+          
+  /reviews/{reviewId}:
+    delete:
+      summary: Delete a review by id
+      description: Delete a review by id
+      tags:
+        - reviews
+      parameters:
+        - name: reviewId
+          in: path
+          description: ID of the review to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: Review id not found
+
+  /cart:
+    get:
+      tags:
+        - store
+      summary: Retrieve the cart
+      description: Retrieve a list of products within the cart for the authenticated user
+      operationId: getCart
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItem'
+
+  /cart/{cartItemId}:
+    parameters:
+      - name: cartItemId
+        in: path
+        required: true
+        schema:
+          type: integer
+    patch:
+      tags:
+        - store
+      summary: Update the quantity of a cart item
+      description: Update the quantity of a cart item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  example: 3
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+        '405':
+          description: Invalid quantity
+        '404':
+          description: Cart item not found
+    delete:
+      tags:
+        - store
+      summary: Remove an item from the user cart
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: Cart item not found
+
+  /orders:
+    get:
+      tags:
+        - store
+      summary: Get a list of orders
+      description: Retrieve a list of orders by page, date range, status, and total amount range
+      parameters:
+        - name: userId
+          in: query
+          description: Filter by user id (Admin only)
+          required: false
+        - name: page
+          in: query
+          description: Page number for paginated results
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: date_from
+          in: query
+          description: Start date for filtering orders (e.g., YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          description: End date for filtering orders (e.g., YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          description: Order status filter
+          required: false
+          schema:
+            type: string
+            enum: ['created', 'shipped', 'refused', 'completed']
+        - name: total_amount_from
+          in: query
+          description: Minimum total amount for filtering orders
+          required: false
+          schema:
+            type: number
+            minimum: 0.01
+        - name: total_amount_to
+          in: query
+          description: Maximum total amount for filtering orders
+          required: false
+          schema:
+            type: number
+            minimum: 0.01
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+      
 components:
   schemas:
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 92
+        product:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 10
+            name:
+              type: string
+              example: 'Ionic Hair Dryer, DOOAIR 1875W Blow Dryer'
+            price:
+              type: number
+              example: 49.99
+            main_photo:
+              $ref: '#/components/schemas/Photo'
+        quantity:
+          type: integer
+          example: 2
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        user_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: ['created', 'shipped', 'refused', 'completed']
+        address:
+          $ref: '#/components/schemas/Address'
+        total_amount:
+          type: number
+          example: 99.98
+        shipping_fee:
+          type: number
+          example: 4.99
+        created_at:
+          type: string
+          example: '2022-09-19T19:04'
+        updated_at:
+          type: string
+          example: '2022-09-19T22:21'
+        items:
+          type: array
+          items:
+           $ref: '#/components/schemas/OrderItem'
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        product:
+          $ref: '#/components/schemas/ProductShort'
+        quantity:
+          type: integer
+          example: 3
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 11
+        rating:
+          type: integer
+          example: 5
+        user_full_name:
+          type: string
+          example: 'John Doe'
+        description:
+          type: string
+          example: 'Best hairblower ever!'
+        created_at:
+          type: string
+          example: '2022-19-09T13:09'
   
     Photo:
       type: object
       properties:
         id: 
-          type: string
-          example: 5
+          type: integer
+          example: 11
         url:
           type: string
           example: 'https://bucket1.s3.us-west-2.amazonaws.com/dryer.png'
@@ -274,3 +586,30 @@ components:
         updated_at:
           type: string
           example: '2022-09-20T18:21'
+          
+    ProductShort:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        name: 
+          type: string
+          example: 'Ionic Hair Dryer, DOOAIR 1875W Blow Dryer'
+        price:
+          type: number
+          example: 66.45
+        discount_price:
+          type: number
+          example: 49.99
+        status:
+          type: string
+          enum:
+            - available
+            - not_available
+        main_photo:
+          $ref: '#/components/schemas/Photo'
+        rating_avg:
+          type: number
+          example: 4.5
+            

@@ -42,9 +42,12 @@ Table users {
   password text
   google_id varchar(255)
   google_token text
-  is_admin boolean [NOT NULL, default: false]
   default_address integer
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table admins {
+  user_id integer [PK]
 }
 
 Table shipping_addresses {
@@ -67,11 +70,20 @@ enum country_code {
   eu
 }
 
+Table shipping_fees {
+  id serial [PK]
+  method varchar(255) [NOT NULL]
+  fee numeric(8, 2) [NOT NULL]
+  country country_code [NOT NULL]
+  postal_code varchar(20)
+}
+
 Table orders {
   id integer [PK]
   user_id integer [not null]
   status order_status [not null]
   address_id integer
+  shipping_fee number(8, 2)
   total_amount number(8, 2) [not null]
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp
@@ -143,10 +155,11 @@ Table error_log {
 }
 
 Ref: product_photos.product_id > products.id
-Ref: products.main_photo_id - product_photos.id
+Ref: products.main_photo_id > product_photos.id
 Ref: categories.id < products.category_id
 Ref: categories.parent_id > categories.id
-Ref: users.default_address - shipping_addresses.id
+Ref: admins.user_id > users.id
+Ref: users.default_address > shipping_addresses.id
 Ref: shipping_addresses.user_id > users.id
 Ref: orders.user_id > users.id
 Ref: orders.(address_id, user_id) > shipping_addresses.(id, user_id)

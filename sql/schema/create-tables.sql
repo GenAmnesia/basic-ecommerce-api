@@ -56,9 +56,20 @@ CREATE TABLE "users" (
     "password" text,
     "google_id" varchar(255),
     "google_token" text,
-    "is_admin" boolean NOT NULL DEFAULT false,
     "default_address" integer,
     "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE "admins" (
+    "user_id" integer PRIMARY KEY
+);
+
+CREATE TABLE "shipping_fees" (
+    "id" serial PRIMARY KEY,
+    "method" varchar(255) NOT NULL,
+    "fee" numeric(8, 2) NOT NULL,
+    "country" country_code NOT NULL,
+    "postal_code" varchar(20)
 );
 
 CREATE TABLE "shipping_addresses" (
@@ -82,6 +93,7 @@ CREATE TABLE "orders" (
     "user_id" integer NOT NULL,
     "status" order_status NOT NULL,
     "address_id" integer NOT NULL,
+    "shipping_fee" numeric(8, 2) NOT NULL,
     "total_amount" numeric(8, 2) NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamp
@@ -147,6 +159,9 @@ CREATE TABLE "error_log" (
 ALTER TABLE "users"
     ADD FOREIGN KEY ("default_address") REFERENCES "shipping_addresses" ("id") ON DELETE SET NULL;
 
+ALTER TABLE "admins"
+    ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+
 ALTER TABLE "product_photos"
     ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE CASCADE;
 
@@ -184,7 +199,7 @@ ALTER TABLE "reviews"
    Functions
 ********************************************************************************/
 
--- Updates the timestamp on a updated_at row when applied.
+-- Update the timestamp on a updated_at row when applied.
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -193,10 +208,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Update total_amount for orders
+CREATE OR REPLACE FUNCTION update_order_total_amount()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE "orders" AS o
+    SET "total_amount" = (
+        SELECT SUM("price_per_item")
+        FROM "order_items"
+        WHERE "order_id" = NEW."order_id"
+    )
+    WHERE o."id" = NEW."order_id";
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 /*******************************************************************************
    Triggers
 ********************************************************************************/
 
+-- Auto-updates updated_at timestamps
 CREATE TRIGGER update_products_updated_at
 BEFORE UPDATE ON products
 FOR EACH ROW
@@ -211,3 +244,22 @@ CREATE TRIGGER update_cart_items_updated_at
 BEFORE UPDATE ON cart_items
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at();
+
+-- Auto-updates "total_amount" in "orders" after changes in "order_items"
+CREATE TRIGGER update_order_total_amount
+AFTER INSERT OR UPDATE ON "order_items"
+FOR EACH ROW
+EXECUTE FUNCTION update_order_total_amount();
+
+
+/*******************************************************************************
+   Misc
+********************************************************************************/
+
+-- Revokes the permission to update the "total_amount" column on the "orders" table for the public role
+REVOKE UPDATE ("total_amount") ON TABLE "orders" FROM PUBLIC;
+
+
+
+
+
