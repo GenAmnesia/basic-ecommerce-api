@@ -1,15 +1,15 @@
 openapi: 3.0.3
 info:
-  title: Basic Ecommerce API
+  title: Basic E-commerce API
   version: 1.0.0
-  description: A basic API for a sample ecommerce.
+  description: An API for a simple e-commerce system.
 paths:
   /products:
     get:
       tags:
         - products
-      summary: Get a list of products
-      description: Retrieve a list of products, by page, price, tag and category
+      summary: Retrieve a List of Products
+      description: Retrieve a list of products based on page, price, tags, and category.
       operationId: getProducts
       parameters:
         - in: query
@@ -17,7 +17,7 @@ paths:
           schema:
             type: integer
           required: false
-          description: If not present or page=-1 no pagination will be generated
+          description: If not provided or if page=-1, no pagination will be applied.
         - in: query
           name: tags
           schema:
@@ -25,39 +25,39 @@ paths:
             items:
               type: string
           required: false
-          description: Will retrieve only the specified tags
+          description: Retrieve products with specified tags only.
         - in: query
           name: catId
           schema:
             type: integer
           required: false
-          description: Category Id of products to retrieve
+          description: Retrieve products by Category ID.
         - in: query
           name: priceFrom
           schema:
             type: number
           required: false
-          description: Start value of the price range to retrieve.
+          description: Minimum price for the products to retrieve.
         - in: query
           name: priceTo
           schema:
             type: number
           required: false
-          description: End value of the price range to retrieve
+          description: Maximum price for the products to retrieve.
         - in: query
           name: limit
           schema:
             type: integer
           required: false
-          description: Max number of items to retrieve
+          description: Maximum number of items to retrieve.
         - in: query
           name: extended
           schema:
             type: boolean
-          description: Retrieve an extended version of the product object
+          description: Retrieve an extended version of the product object.
       responses:
         '200':
-          description: Successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -67,8 +67,8 @@ paths:
     post:
       tags:
         - products
-      summary: Add a new product to the store
-      description: Add a new product to the store
+      summary: Add a New Product to the Store
+      description: Add a new product to the store.
       operationId: addProduct
       requestBody:
         required: true
@@ -82,7 +82,7 @@ paths:
                   example: "Ionic Hair Dryer, DOOAIR 1875W Blow Dryer"
                 description:
                   type: string
-                  example: "Professional-grade ion technology diffuser hair dryer creates a protective film on the surface of each hair, preventing heat damage and adding shine."
+                  example: "Professional-grade ion technology diffuser hair dryer that creates a protective film on the surface of each hair, preventing heat damage and adding shine."
                 category_id:
                   type: integer
                   example: 1
@@ -112,65 +112,65 @@ paths:
                   example: [7, 9, 12]
       responses:
         '200':
-          description: Successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
         '405':
-          description: Invalid input
+          description: Invalid Input
 
   /products/{productId}:
     parameters:
       - name: productId
         in: path
-        description: ID of product to return
+        description: ID of the product to return
         required: true
         schema:
           type: integer
     get:
       tags:
         - products
-      summary: Find product by id
-      description: Find product by id
+      summary: Find a Product by ID
+      description: Find a product by its unique ID.
       operationId: getProductById
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
                $ref: '#/components/schemas/Product'
         '400':
-          description: Invalid ID supplied
+          description: Invalid ID Supplied
         '404':
-          description: Product not found
+          description: Product Not Found
     put:
       tags:
         - products
-      summary: Update an existing product
-      description: Update an existing product
+      summary: Update an Existing Product
+      description: Update an existing product in the store.
       operationId: updateProduct
       responses:
         '200':
-          description: Successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
         '404':
-          description: Product not found
+          description: Product Not Found
         '405':
-          description: Validation exception
+          description: Validation Exception
     delete:
       tags:
         - products
-      summary: Delete a product
-      description: Deletes a product from the store. A soft delete will be performed to preserve any references integrity.
+      summary: Delete a Product
+      description: Delete a product from the store. A soft delete will be performed to preserve referential integrity.
       operationId: deleteProduct
       responses:
         '200':
-          description: Successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -184,8 +184,8 @@ paths:
     post:
       tags:
         - photos
-      summary: Uploads a photo
-      description: Uploads a photo with an unassigned product ID, useful when creating a product for the first time.
+      summary: Upload a Photo
+      description: Upload a photo with an unassigned product ID, which is useful when creating a product for the first time.
       requestBody:
         content:
           multipart/form-data:
@@ -194,7 +194,7 @@ paths:
               example: //todo
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -204,20 +204,20 @@ paths:
     parameters:
       - name: photoId
         in: path
-        description: ID of a photo
+        description: ID of a Photo
         required: true
         schema:
           type: integer
     delete:
-      summary: Delete a photo by id
-      description: Delete a photo by id
+      summary: Delete a Photo by ID
+      description: Delete a photo by its unique ID.
       tags:
         - photos
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
         '404':
-          description: photo id not found
+          description: Photo ID Not Found
 
   /reviews/{productId}:
     parameters:
@@ -230,8 +230,8 @@ paths:
     get:
       tags:
         - reviews
-      summary: Get a paginated list of reviews for a product
-      description: Get a paginated list of reviews for a product
+      summary: Get a Paginated List of Reviews for a Product
+      description: Get a paginated list of reviews for a product.
       operationId: getReviews
       parameters:
         - in: query
@@ -239,10 +239,10 @@ paths:
           schema:
             type: integer
           required: false
-          description: Will retrieve only the reviews having this rating
-      responses: 
+          description: Retrieve only the reviews with this rating.
+      responses:
         '200':
-          description: Successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -250,14 +250,14 @@ paths:
                 items:
                   $ref: '#/components/schemas/Review'
         '400':
-          description: Invalid parameters
+          description: Invalid Parameters
         '404':
-          description: Product Id not found
+          description: Product ID Not Found
     post:
       tags:
         - reviews
-      summary: Add a new review to a product
-      description: Add a new review to a product
+      summary: Add a New Review to a Product
+      description: Add a new review to a product.
       operationId: postReview
       requestBody:
         required: true
@@ -274,48 +274,48 @@ paths:
                   example: 5
                 description:
                   type: string
-                  example: 'Best hairblower ever!'
+                  example: 'The best hair dryer ever!'
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Review'
         '405':
-          description: validation exception
+          description: Validation Exception
         '404':
-          description: product id not found
-          
+          description: Product ID Not Found
+
   /reviews/{reviewId}:
     delete:
-      summary: Delete a review by id
-      description: Delete a review by id
+      summary: Delete a Review by ID
+      description: Delete a review by its unique ID.
       tags:
         - reviews
       parameters:
         - name: reviewId
           in: path
-          description: ID of the review to delete
+          description: ID of the review to be deleted
           required: true
           schema:
             type: integer
       responses:
         '200':
-          description: Successful operation
+          description: Successful Operation
         '404':
-          description: Review id not found
+          description: Review ID Not Found
 
   /cart:
     get:
       tags:
         - store
-      summary: Retrieve the cart
-      description: Retrieve a list of products within the cart for the authenticated user
+      summary: View the Cart
+      description: View the list of products in the cart for the authenticated user.
       operationId: getCart
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -333,8 +333,8 @@ paths:
     patch:
       tags:
         - store
-      summary: Update the quantity of a cart item
-      description: Update the quantity of a cart item
+      summary: Update Cart Item Quantity
+      description: Update the quantity of a cart item.
       requestBody:
         required: true
         content:
@@ -347,35 +347,36 @@ paths:
                   example: 3
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CartItem'
         '405':
-          description: Invalid quantity
+          description: Invalid Quantity
         '404':
-          description: Cart item not found
+          description: Cart Item Not Found
     delete:
       tags:
         - store
-      summary: Remove an item from the user cart
+      summary: Remove an Item from the User's Cart
+      description: Remove an item from the user's cart.
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
         '404':
-          description: Cart item not found
+          description: Cart Item Not Found
 
   /orders:
     get:
       tags:
         - store
-      summary: Get a list of purchase orders
-      description: Retrieve a list of orders by page, date range, status, and total amount range
+      summary: Get a List of Purchase Orders
+      description: Retrieve a list of orders based on page, date range, status, and total amount range.
       parameters:
         - name: userId
           in: query
-          description: Filter by user id (Admin only)
+          description: Filter by user ID (Admin only)
           required: false
           schema:
             type: string
@@ -423,7 +424,7 @@ paths:
             minimum: 0.01
       responses:
         200:
-          description: Successful response
+          description: Successful Response
           content:
             application/json:
               schema:
@@ -433,7 +434,7 @@ paths:
     post:
       tags:
         - store
-      summary: Place a new purchase order
+      summary: Place a New Purchase Order
       description: Create a new order for an array of cart items. This process involves removing the referenced items from the cart and adding them to order_items, thereby denormalizing the data.
       operationId: createOrder
       requestBody:
@@ -456,7 +457,7 @@ paths:
                   example: [12]
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -466,31 +467,31 @@ paths:
     parameters:
       - name: orderId
         in: path
-        description: Id of an order
+        description: ID of an order
         required: true
         schema:
           type: integer
     get:
       tags:
         - store
-      summary: Find a purchase order by ID
-      description: Find a purchase order by ID
+      summary: Retrieve a Purchase Order by ID
+      description: Retrieve a purchase order by its unique ID.
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
         '405':
-          description: invalid id
+          description: Invalid ID
         '404':
-          description: order not found
+          description: Order Not Found
     patch:
       tags:
         - store
-      summary: Update the status of an order
-      description: Update the status of an order
+      summary: Update the Status of an Order
+      description: Update the status of an existing order.
       requestBody:
         required: true
         content:
@@ -503,46 +504,46 @@ paths:
                   enum: ['created', 'shipped', 'refused', 'completed']
       responses:
         '200':
-          description: successful operation. Returns the new order object.
+          description: Successful Operation. Returns the updated order object.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
         '405': 
-          description: validation exception
+          description: Validation Exception
         '404':
-          description: order not found
+          description: Order Not Found
 
   /addresses:
     get:
       tags:
-        - user
-      summary: Retrieve the complete list of shipping addresses
-      description: Retrieve the complete list of shipping addresses for the authenticated user or a queried user id.
+        - address
+      summary: Retrieve the Complete List of Shipping Addresses
+      description: Retrieve the complete list of shipping addresses for the authenticated user or a queried user ID.
       parameters:
         - name: userId
           in: query
-          description: Filter addresses by user_id. Works only for admins
+          description: Filter addresses by user ID. This works only for admins.
           schema:
             type: string
         - name: country
           in: query
-          description: Filter addresses by country
+          description: Filter addresses by country.
           schema:
             type: string
         - name: state
           in: query
-          description: Filter addresses by state/province
+          description: Filter addresses by state/province.
           schema:
             type: string
         - name: pc
           in: query
-          description: Filter addresses by postal code
+          description: Filter addresses by postal code.
           schema:
             type: string
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -550,24 +551,24 @@ paths:
                 items:
                   $ref: '#/components/schemas/Address'
         '401':
-          description: unauthorized
+          description: Unauthorized
     post:
       tags:
-        - user
-      summary: Add a new shipping address for the authenticated user
-      description: Add a new shipping address for the authenticated user
+        - address
+      summary: Add a New Shipping Address for the Authenticated User
+      description: Add a new shipping address for the authenticated user.
       operationId: postAddress
       requestBody:
           $ref: '#/components/requestBodies/Address'
       responses:
         '200':
-          description: successful operation. Returns the created object.
+          description: Successful Operation. Returns the created object.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Address'
         '405':
-          description: validation exception
+          description: Validation Exception
   
   /addresses/{addressId}:
     parameters:
@@ -578,50 +579,50 @@ paths:
           type: integer
     get:
       tags:
-        - user
-      summary: Find a shipping address by id
-      description: Find a shipping address by id
+        - address
+      summary: Retrieve a Shipping Address by ID
+      description: Retrieve a shipping address by its unique ID.
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Address'
         '401':
-          description: unauthorized
+          description: Unauthorized
         '404':
-          description: address not found
+          description: Address Not Found
     put:
       tags:
-        - user
-      summary: Update a shipping address
-      description: Update a shipping address
+        - address
+      summary: Update a Shipping Address
+      description: Update an existing shipping address.
       requestBody:
         $ref: '#/components/requestBodies/Address'
       responses:
         '200':
-          description: Successful operation. Returns the new object.
+          description: Successful Operation. Returns the updated object.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Address'
         '401':
-          description: unauthorized
+          description: Unauthorized
         '404':
-          description: address not found
+          description: Address Not Found
     delete:
       tags:
-        - user
-      summary: Delete a shipping address
-      description: Delete a shipping address
+        - address
+      summary: Delete a Shipping Address
+      description: Delete a shipping address by its unique ID.
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
         '401':
-          description: unauthorized
+          description: Unauthorized
         '404':
-          description: address id not found
+          description: Address ID Not Found
 
   /user:
     get:
@@ -630,13 +631,13 @@ paths:
       parameters:
         - name: userId
           in: query
-          description: For admins only
+          description: Filter by user ID (For admins only)
           schema:
             type: string
-      summary: Get the user data
+      summary: Get User Data
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -644,12 +645,12 @@ paths:
     post:
       tags:
         - user
-      summary: Register a new user
+      summary: Register a New User
       requestBody:
         $ref: '#/components/requestBodies/User'
       responses:
         '200':
-          description: successful operation
+          description: Successful Operation
           content:
             application/json:
               schema:
@@ -657,12 +658,12 @@ paths:
     put:
       tags:
         - user
-      summary: Update the authenticated user
+      summary: Update the Authenticated User
       requestBody:
         $ref: '#/components/requestBodies/User'
       responses:
         '200':
-          description: successful operation. Returns the new object.
+          description: Successful Operation. Returns the updated object.
           content:
             application/json:
               schema:
@@ -673,20 +674,44 @@ paths:
       - name: userId
         in: path
         required: true
-        description: ID of an user
+        description: ID of a user
         schema:
           type: string
     delete:
       tags:
         - user
-      summary: Delete user
+      summary: Delete User
+      description: Delete a user by their unique ID.
+      responses:
+        '200':
+          description: Successful Operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: User Not Found
+  
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Logs user into the system
       responses:
         '200':
           description: successful operation
-        '401':
-          description: unauthorized
-        '404':
-          description: user not found
+        '400':
+          description: Invalid username/password
+          
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      parameters: []
+      responses:
+        default:
+          description: successful operation
         
       
 components:
