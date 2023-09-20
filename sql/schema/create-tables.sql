@@ -95,6 +95,7 @@ CREATE TABLE "orders" (
     "address_id" integer NOT NULL,
     "shipping_fee" numeric(8, 2) NOT NULL,
     "total_amount" numeric(8, 2) NOT NULL,
+    "payment_id" integer NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamp
 );
@@ -122,7 +123,6 @@ CREATE TABLE "cart_items" (
 CREATE TABLE "payments" (
     "id" serial PRIMARY KEY,
     "user_id" integer NOT NULL,
-    "order_id" integer NOT NULL,
     "amount" numeric(8, 2) NOT NULL,
     "timestamp" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "payment_method" varchar(50) NOT NULL,
@@ -177,6 +177,7 @@ ALTER TABLE "shipping_addresses"
 
 ALTER TABLE "orders"
     ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
+    ADD FOREIGN KEY ("payment_id") REFERENCES "payments" ("id") ON DELETE RESTRICT;
     ADD FOREIGN KEY ("address_id", "user_id") REFERENCES "shipping_addresses" ("id", "user_id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE "order_items"

@@ -83,6 +83,7 @@ const tablesToCheck = [
       'address_id',
       'shipping_fee',
       'total_amount',
+      'payment_id',
       'created_at',
       'updated_at',
     ],
@@ -114,7 +115,6 @@ const tablesToCheck = [
     expectedColumns: [
       'id',
       'user_id',
-      'order_id',
       'amount',
       'timestamp',
       'payment_method',
