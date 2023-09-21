@@ -1,7 +1,7 @@
 /* eslint no-undef: 0 */
 
 const assert = require('assert');
-const { query } = require('../db');
+const { query } = require('../src/config/db');
 
 const tablesToCheck = [
   {

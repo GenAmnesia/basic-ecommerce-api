@@ -177,7 +177,7 @@ ALTER TABLE "shipping_addresses"
 
 ALTER TABLE "orders"
     ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
-    ADD FOREIGN KEY ("payment_id") REFERENCES "payments" ("id") ON DELETE RESTRICT;
+    ADD FOREIGN KEY ("payment_id") REFERENCES "payments" ("id") ON DELETE RESTRICT,
     ADD FOREIGN KEY ("address_id", "user_id") REFERENCES "shipping_addresses" ("id", "user_id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE "order_items"
@@ -189,8 +189,7 @@ ALTER TABLE "cart_items"
     ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE SET NULL;
 
 ALTER TABLE "payments"
-    ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
-    ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("id") ON DELETE CASCADE;
+    ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "reviews"
     ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
@@ -224,6 +223,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION to_lower_email_function()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.email = LOWER(NEW.email);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 
 /*******************************************************************************
@@ -251,6 +257,13 @@ CREATE TRIGGER update_order_total_amount
 AFTER INSERT OR UPDATE ON "order_items"
 FOR EACH ROW
 EXECUTE FUNCTION update_order_total_amount();
+
+-- Auto lowers any inserted email
+CREATE TRIGGER to_lower_email_trigger
+BEFORE INSERT OR UPDATE ON users
+FOR EACH ROW
+WHEN (NEW.email IS NOT NULL)
+EXECUTE FUNCTION to_lower_email_function();
 
 
 /*******************************************************************************
