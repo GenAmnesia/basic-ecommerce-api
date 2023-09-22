@@ -2,25 +2,15 @@ const { Pool } = require('pg');
 
 require('dotenv').config();
 
-const user = process.env.DB_USERNAME || '';
-const password = process.env.DB_PASSWORD || '';
-const host = process.env.DB_HOST || 'localhost';
-const port = process.env.DB_PORT || '5432';
-const database = process.env.DB_NAME || 'basic_ecommerce';
-
 const dbConfig = {
-  development: {
-    connectionString: `postgresql://${user}:${password}@${host}:${port}/${database}`,
-  },
-  test: {
-    connectionString: `postgresql://${user}:${password}@${host}:${port}/${database}_test`,
-  },
-  production: {
-    connectionString: `postgresql://${user}:${password}@${host}:${port}/${database}`,
-  },
+  user: process.env.DB_USERNAME || '',
+  password: process.env.DB_PASSWORD || '',
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'basic_ecommerce',
 };
 
-const pool = new Pool(dbConfig[process.env.NODE_ENV]);
+const pool = new Pool(dbConfig);
 
 module.exports.query = async (text, params) => {
   const start = Date.now();

@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  web:
+    image: node:20-alpine3.17
+    command: >
+      sh -c "
+        npm install &&
+        npm test
+      "
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: test_db
+      NODE_ENV: test
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    working_dir: /app
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres

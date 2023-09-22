@@ -1,8 +1,16 @@
 /* eslint no-undef: 0 */
 
 const assert = require('assert');
-const { query } = require('../src/config/db');
+const { Client } = require('pg');
+const { createTestDatabase, dropTestDatabase } = require('../scripts/database');
 require('dotenv').config();
+
+const username = process.env.DB_USERNAME || '';
+const password = process.env.DB_PASSWORD || '';
+const host = process.env.DB_HOST || 'localhost';
+const port = process.env.DB_PORT || '5432';
+
+const client = new Client(`postgres://${username}:${password}@${host}:${port}/test_db`);
 
 const tablesToCheck = [
   {
@@ -149,20 +157,20 @@ const tablesToCheck = [
   },
 ];
 
-describe('Verify the existence of tables and their columns', () => {
+describe('Verify that the tables creation script is creating the expected tables and columns', () => {
   before(async () => {
-    const db_name = process.env.DB_NAME || 'basic_ecommerce';
-    tablesToCheck.forEach(async (tableInfo) => {
-      const { tableName, columns } = tableInfo;
-      await query(`TRUNCATE ${tableName} CASCADE`);
-      await query(`DROP TABLE IF EXISTS ${tableName}`);
-    });
+    await createTestDatabase();
+    await client.connect();
+  });
+  after(async () => {
+    await client.end();
+    await dropTestDatabase();
   });
   tablesToCheck.forEach((tableInfo) => {
     const { tableName, expectedColumns } = tableInfo;
 
     it(`Should have table "${tableName}" with specified columns`, async () => {
-      const tableResult = await query(`
+      const tableResult = await client.query(`
           SELECT table_name
           FROM information_schema.tables
           WHERE table_name = '${tableName}'
@@ -173,7 +181,7 @@ describe('Verify the existence of tables and their columns', () => {
       // Verify that the table exists
       assert.ok(existingTables.includes(tableName), `Table "${tableName}" does not exist`);
 
-      const columnResult = await query(`
+      const columnResult = await client.query(`
           SELECT column_name
           FROM information_schema.columns
           WHERE table_name = '${tableName}'
