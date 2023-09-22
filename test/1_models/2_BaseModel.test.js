@@ -2,10 +2,10 @@
 const chai = require('chai');
 const Joi = require('joi');
 const BaseModel = require('../../src/models/BaseModel');
+const { query } = require('../../src/config/db');
 
 const { assert } = chai;
 require('dotenv').config();
-const client = require('../helper');
 
 describe('BaseModel tests', () => {
   const testSchema = Joi.object({
@@ -15,13 +15,13 @@ describe('BaseModel tests', () => {
   const baseModel = new BaseModel('test', testSchema);
   const values = [[1, 'value1'], [2, 'value2'], [3, 'value3']];
   before(async () => {
-    await client.query(`
+    await query(`
     CREATE TABLE "test" (
       id integer PRIMARY KEY,
       value varchar(255) NOT NULL
     );
     `);
-    const promises = values.map((value) => client.query(`
+    const promises = values.map((value) => query(`
       INSERT INTO test (id, value)
       VALUES ($1, $2);
   `, [value[0], value[1]]));
@@ -29,7 +29,7 @@ describe('BaseModel tests', () => {
     await Promise.all(promises);
   });
   after(async () => {
-    await client.query(`
+    await query(`
     DROP TABLE test;
     `);
   });

@@ -1,5 +1,5 @@
+# For testing purposes only. Run 'docker-compose up' to execute the tests in an isolated environment.
 version: '3'
-
 services:
   web:
     image: node:20-alpine3.17

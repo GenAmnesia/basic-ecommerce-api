@@ -1,9 +1,9 @@
 /* eslint no-undef: 0 */
 const chai = require('chai');
+const { query } = require('../../src/config/db');
 
 const { assert } = chai;
 require('dotenv').config();
-const client = require('../helper');
 
 const tablesToCheck = [
   {
@@ -155,7 +155,7 @@ describe('Verify that the tables creation script is creating the expected tables
     const { tableName, expectedColumns } = tableInfo;
 
     it(`Should have table "${tableName}" with specified columns`, async () => {
-      const tableResult = await client.query(`
+      const tableResult = await query(`
           SELECT table_name
           FROM information_schema.tables
           WHERE table_name = '${tableName}'
@@ -166,7 +166,7 @@ describe('Verify that the tables creation script is creating the expected tables
       // Verify that the table exists
       assert.ok(existingTables.includes(tableName), `Table "${tableName}" does not exist`);
 
-      const columnResult = await client.query(`
+      const columnResult = await query(`
           SELECT column_name
           FROM information_schema.columns
           WHERE table_name = '${tableName}'
