@@ -7,17 +7,16 @@ function validationError(_error) {
     Error.captureStackTrace(error);
     throw error;
   } else {
-    const cleanedError = {
-      message: error.message,
-      code: error.code,
-      status: error.status,
-      details: error.details.map((detail) => ({
-        key: detail.context.key,
-        type: detail.type,
-        message: detail.message,
-      })),
-    };
-    throw cleanedError;
+    const cleanedError = new Error(error.message);
+    cleanedError.code = error.code;
+    cleanedError.status = error.status;
+    cleanedError.details = error.details.map((detail) => ({
+      key: detail.context.key,
+      type: detail.type,
+      message: detail.message,
+    }));
+
+    return cleanedError;
   }
 }
 

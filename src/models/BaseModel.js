@@ -9,6 +9,7 @@ class BaseModel {
   }
 
   async findById(id) {
+    this.validateData({ id });
     const sqlQuery = `
     SELECT *
     FROM ${this.tableName} as t
@@ -24,6 +25,7 @@ class BaseModel {
     if (Object.keys(queryObject).length === 0) {
       throw new Error('Query object is empty.');
     }
+    this.validateData(queryObject);
 
     const columns = Object.keys(queryObject);
     const values = Object.values(queryObject);
@@ -43,13 +45,13 @@ class BaseModel {
   }
 
   async insertOne(data) {
-    if (data) {
-      this.modelData = data;
-    }
     if (!this.modelData || typeof this.modelData !== 'object') {
       throw new Error('Data must be an object.');
     }
-    this.validateData(this.modelData);
+    if (data) {
+      this.validateData(data);
+      this.modelData = data;
+    }
 
     const columns = Object.keys(this.modelData);
     const values = Object.values(this.modelData);
@@ -72,6 +74,7 @@ class BaseModel {
     if (!data || typeof data !== 'object') {
       throw new Error('Data must be an object.');
     }
+    this.validateData(data);
     this.modelData = { ...this.modelData, ...data };
   }
 
@@ -83,10 +86,11 @@ class BaseModel {
     const validationOptions = {
       abortEarly: false,
       allowUnknown: false,
+      convert: false,
     };
     const { error } = this.schema.validate(data, validationOptions);
     if (error) {
-      validationError(error);
+      throw validationError(error);
     }
   }
 }

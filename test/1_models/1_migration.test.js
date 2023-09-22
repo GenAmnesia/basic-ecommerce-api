@@ -1,16 +1,9 @@
 /* eslint no-undef: 0 */
+const chai = require('chai');
 
-const assert = require('assert');
-const { Client } = require('pg');
-const { createTestDatabase, dropTestDatabase } = require('../scripts/database');
+const { assert } = chai;
 require('dotenv').config();
-
-const username = process.env.DB_USERNAME || '';
-const password = process.env.DB_PASSWORD || '';
-const host = process.env.DB_HOST || 'localhost';
-const port = process.env.DB_PORT || '5432';
-
-const client = new Client(`postgres://${username}:${password}@${host}:${port}/test_db`);
+const client = require('../helper');
 
 const tablesToCheck = [
   {
@@ -158,14 +151,6 @@ const tablesToCheck = [
 ];
 
 describe('Verify that the tables creation script is creating the expected tables and columns', () => {
-  before(async () => {
-    await createTestDatabase();
-    await client.connect();
-  });
-  after(async () => {
-    await client.end();
-    await dropTestDatabase();
-  });
   tablesToCheck.forEach((tableInfo) => {
     const { tableName, expectedColumns } = tableInfo;
 

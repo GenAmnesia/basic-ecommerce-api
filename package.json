@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "nodemon server.js",
-    "test": "cross-env NODE_ENV=test mocha",
+    "test": "cross-env NODE_ENV=test mocha 'test/**/*.test.js'",
     "migrate": "node scripts/database.js"
   },
   "keywords": [
