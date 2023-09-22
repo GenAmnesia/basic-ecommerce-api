@@ -8,9 +8,19 @@ const host = process.env.DB_HOST || 'localhost';
 const port = process.env.DB_PORT || '5432';
 const database = process.env.DB_NAME || 'basic_ecommerce';
 
-const pool = new Pool({
-  user, host, database, password, port,
-});
+const dbConfig = {
+  development: {
+    connectionString: `postgresql://${user}:${password}@${host}:${port}/${database}`,
+  },
+  test: {
+    connectionString: `postgresql://${user}:${password}@${host}:${port}/${database}_test`,
+  },
+  production: {
+    connectionString: `postgresql://${user}:${password}@${host}:${port}/${database}`,
+  },
+};
+
+const pool = new Pool(dbConfig[process.env.NODE_ENV]);
 
 module.exports.query = async (text, params) => {
   const start = Date.now();

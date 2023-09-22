@@ -26,7 +26,7 @@ function auth(app) {
       { usernameField: 'email' },
       async (username, password, done) => {
         try {
-          const user = await userModel.findOne({ email: username });
+          const user = await userModel.findByEmail(username);
           if (!user) return done(null, false, { message: 'Incorrect username.' });
           if (user.password != password) {
             return done(null, false, { message: 'Incorrect password.' });

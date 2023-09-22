@@ -39,16 +39,12 @@ app.use((err, req, res, next) => {
     code: err.code,
     ...err,
   };
-  if (process.env.DEBUG === 'true') {
+  if (process.env.NODE_ENV === 'dev') {
     customError.stack = err.stack;
-    res.status(err.status || 500).json({
-      error: customError,
-    });
-  } else {
-    res.status(err.status || 500).json({
-      error: customError,
-    });
   }
+  res.status(err.status || 500).json({
+    error: customError,
+  });
 });
 
 app.listen(port, () => {

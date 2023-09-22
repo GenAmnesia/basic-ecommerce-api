@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const { query } = require('../src/config/db');
+require('dotenv').config();
 
 const tablesToCheck = [
   {
@@ -149,6 +150,14 @@ const tablesToCheck = [
 ];
 
 describe('Verify the existence of tables and their columns', () => {
+  before(async () => {
+    const db_name = process.env.DB_NAME || 'basic_ecommerce';
+    tablesToCheck.forEach(async (tableInfo) => {
+      const { tableName, columns } = tableInfo;
+      await query(`TRUNCATE ${tableName} CASCADE`);
+      await query(`DROP TABLE IF EXISTS ${tableName}`);
+    });
+  });
   tablesToCheck.forEach((tableInfo) => {
     const { tableName, expectedColumns } = tableInfo;
 

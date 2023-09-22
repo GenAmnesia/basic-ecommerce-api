@@ -16,12 +16,33 @@ const userSchema = {
 
 class UserModel extends BaseModel {
   constructor() {
-    super('users');
+    super('users', Joi.object(userSchema));
   }
 
   async findByEmail(email) {
     const result = await this.findOne({ email });
     return result;
+  }
+
+  async createLocal(email, password) {
+    try {
+      const newUser = await this.insertOne({ email, password });
+      return newUser;
+    } catch (error) {
+      Error.captureStackTrace(error);
+      if (error.code === '23505' && error.constraint === 'users_email_key') {
+        error.message = 'Email already exists.';
+        error.status = 400;
+      }
+      if (process.env.NODE_ENV === 'dev') {
+        throw error;
+      } else {
+        const customError = new Error(error.message);
+        customError.code = error.code;
+        customError.status = error.status || 500;
+        throw customError;
+      }
+    }
   }
 }
 

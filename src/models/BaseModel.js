@@ -1,9 +1,11 @@
 const { query } = require('../config/db');
+const validationError = require('../utils/validationError');
 
 class BaseModel {
-  constructor(tableName) {
+  constructor(tableName, schema) {
     this.tableName = tableName;
     this.modelData = {};
+    this.schema = schema;
   }
 
   async findById(id) {
@@ -47,6 +49,7 @@ class BaseModel {
     if (!this.modelData || typeof this.modelData !== 'object') {
       throw new Error('Data must be an object.');
     }
+    this.validateData(this.modelData);
 
     const columns = Object.keys(this.modelData);
     const values = Object.values(this.modelData);
@@ -72,15 +75,18 @@ class BaseModel {
     this.modelData = { ...this.modelData, ...data };
   }
 
-  // Metodo getter per ottenere i dati del modello
   getModelData() {
     return this.modelData;
   }
 
-  validateData(schema) {
-    const { error } = schema.validate(this.modelData);
+  validateData(data) {
+    const validationOptions = {
+      abortEarly: false,
+      allowUnknown: false,
+    };
+    const { error } = this.schema.validate(data, validationOptions);
     if (error) {
-      throw error;
+      validationError(error);
     }
   }
 }

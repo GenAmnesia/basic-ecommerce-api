@@ -4,47 +4,33 @@ const passport = require('passport');
 const { userSchema, UserModel } = require('../models/UserModel');
 const validateBody = require('../middleware/validateBody');
 
-const { email, password } = userSchema;
+const loginSchema = Joi.object({
+  email: userSchema.email.concat(Joi.required()),
+  password: userSchema.password.concat(Joi.required()),
+});
 
 usersRouter.route('/')
   .get((req, res) => {
     res.send(`Hi ${req.user.email}`);
   })
   .post(
-    validateBody(Joi.object({
-      email: email.concat(Joi.required()),
-      password: password.concat(Joi.required()),
-    })),
+    validateBody(loginSchema),
     async (req, res, next) => {
       const { email, password } = req.body;
       const userModel = new UserModel();
       try {
-        const newUser = await userModel.insertOne({ email, password });
+        const newUser = await userModel.createLocal(email, password);
         if (!newUser) throw new Error('Failed to create user.');
         res.status(201).send('User Created!');
       } catch (error) {
-        if (error.code === '23505' && error.constraint === 'users_email_key') {
-          error.message = 'Email already exists.';
-          error.status = 400;
-        }
-        if (process.env.DEBUG === 'true') {
-          next(error);
-        } else {
-          const customError = new Error(error.message);
-          customError.code = error.code;
-          customError.status = error.status || 500;
-          next(customError);
-        }
+        next(error);
       }
     },
   );
 
 usersRouter.route('/login')
   .post(
-    validateBody(Joi.object({
-      email: email.concat(Joi.required()),
-      password: password.concat(Joi.required()),
-    })),
+    validateBody(loginSchema),
     passport.authenticate('local', {
       failureFlash: true,
       failureRedirect: '/user/login',
