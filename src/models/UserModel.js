@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const BaseModel = require('./BaseModel');
 
-const userSchema = {
+const userSchemaKeys = {
   id: Joi.number().integer(),
   first_name: Joi.string().min(2).max(255),
   last_name: Joi.string().min(2).max(255),
@@ -11,12 +11,26 @@ const userSchema = {
     .message('Passwords must have the following properties: - At least 3 characters. - At most 30 characters. - No symbols contained'),
   google_id: Joi.string().max(255),
   default_address: Joi.number().integer(),
-  created_at: Joi.date(),
+  created_at: Joi.date().forbidden(),
+};
+
+const userSchema = {
+  base: Joi.object(userSchemaKeys),
+  post: Joi.object({
+    ...userSchemaKeys,
+    id: userSchemaKeys.id.forbidden(),
+    email: userSchemaKeys.email.required(),
+  }),
+  localLogin: Joi.object({
+    ...userSchemaKeys,
+    email: userSchemaKeys.email.required(),
+    password: userSchemaKeys.password.required(),
+  }),
 };
 
 class UserModel extends BaseModel {
   constructor() {
-    super('users', Joi.object(userSchema));
+    super('users', userSchema);
   }
 
   async findByEmail(email) {
@@ -25,8 +39,10 @@ class UserModel extends BaseModel {
   }
 
   async createLocal(email, password) {
+    const data = { email, password };
     try {
-      const newUser = await this.insertOne({ email, password });
+      this.validateData(data, this.schema.localLogin);
+      const newUser = await this.setModelData(data).save();
       return newUser;
     } catch (error) {
       Error.captureStackTrace(error);

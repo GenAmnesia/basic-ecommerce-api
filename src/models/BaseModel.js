@@ -18,7 +18,8 @@ class BaseModel {
 
     const { rowCount, rows } = await query(sqlQuery, [id]);
     if (rowCount < 1) return null;
-    return rows[0];
+    this.setModelData(rows[0]);
+    return this.getModelData();
   }
 
   async findOne(queryObject) {
@@ -41,16 +42,16 @@ class BaseModel {
 
     const { rowCount, rows } = await query(sqlQuery, values);
     if (rowCount < 1) return null;
-    return rows[0];
+    this.setModelData(rows[0]);
+    return this.getModelData();
   }
 
-  async insertOne(data) {
+  async insert(data = this.modelData) {
     if (!this.modelData || typeof this.modelData !== 'object') {
       throw new Error('Data must be an object.');
     }
-    if (data) {
-      this.validateData(data);
-      this.modelData = data;
+    if (data !== this.modelData) {
+      this.setModelData(data);
     }
 
     const columns = Object.keys(this.modelData);
@@ -67,31 +68,76 @@ class BaseModel {
 
     const { rowCount, rows } = await query(sqlQuery, values);
     if (rowCount < 1) return null;
-    return rows[0];
+    this.setModelData(rows[0]);
+    return this.getModelData();
   }
 
   setModelData(data) {
     if (!data || typeof data !== 'object') {
       throw new Error('Data must be an object.');
     }
-    this.validateData(data);
+    this.validateData(data, this.schema.post);
+    this.modelData = data;
+    return this;
+  }
+
+  updateModelData(data) {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Data must be an object.');
+    }
+    this.validateData({ ...this.modelData, ...data }, this.schema.post);
     this.modelData = { ...this.modelData, ...data };
+    return this;
   }
 
   getModelData() {
     return this.modelData;
   }
 
-  validateData(data) {
+  validateData(data, schema = this.schema.base) {
     const validationOptions = {
       abortEarly: false,
       allowUnknown: false,
       convert: false,
     };
-    const { error } = this.schema.validate(data, validationOptions);
+    const { error } = schema.validate(data, validationOptions);
     if (error) {
       throw validationError(error);
     }
+  }
+
+  async findMany(options = {}, values = []) {
+    const {
+      where, order_by, limit,
+    } = options;
+
+    if (!where) {
+      throw new Error('WHERE clause is missing.');
+    }
+
+    let sqlQuery = `
+      SELECT *
+      FROM ${this.tableName} as t
+      WHERE ${where}
+    `;
+
+    if (order_by) {
+      sqlQuery += `
+        ORDER BY ${order_by}
+      `;
+    }
+
+    if (limit) {
+      sqlQuery += `
+        LIMIT ${limit}
+      `;
+    }
+
+    sqlQuery += ';';
+
+    const { rowCount, rows } = await query(sqlQuery, values);
+    if (rowCount < 1) return [];
+    return rows;
   }
 }
 

@@ -1,20 +1,14 @@
 const usersRouter = require('express').Router();
-const Joi = require('joi');
 const passport = require('passport');
 const { userSchema, UserModel } = require('../models/UserModel');
 const validateBody = require('../middleware/validateBody');
-
-const loginSchema = Joi.object({
-  email: userSchema.email.concat(Joi.required()),
-  password: userSchema.password.concat(Joi.required()),
-});
 
 usersRouter.route('/')
   .get((req, res) => {
     res.send(`Hi ${req.user.email}`);
   })
   .post(
-    validateBody(loginSchema),
+    validateBody(userSchema.localLogin),
     async (req, res, next) => {
       const { email, password } = req.body;
       const userModel = new UserModel();
@@ -30,13 +24,13 @@ usersRouter.route('/')
 
 usersRouter.route('/login')
   .post(
-    validateBody(loginSchema),
+    validateBody(userSchema.localLogin),
     passport.authenticate('local', {
       failureFlash: true,
       failureRedirect: '/user/login',
     }),
     (req, res) => {
-      res.redirect(303, '/user');
+      res.redirect('/user');
     },
   )
   .get(
@@ -53,8 +47,8 @@ usersRouter.route('/login')
 usersRouter.get('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
+    return res.redirect('/');
   });
-  res.redirect('/');
 });
 
 module.exports = usersRouter;

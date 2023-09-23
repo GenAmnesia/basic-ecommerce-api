@@ -9,6 +9,7 @@ function validateBody(schema) {
     const { error } = schema.validate(req.body, validationOptions);
 
     if (error) {
+      Error.captureStackTrace(error);
       throw validationError(error);
     }
 
