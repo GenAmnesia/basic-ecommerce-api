@@ -44,7 +44,7 @@ class UserModel extends BaseModel {
     return result;
   }
 
-  async create(data, strategy = 'local') {
+  async create(data, strategy) {
     let newUser;
     if (strategy === 'local') {
       this.validateData(data, this.schema.tailor('localLogin'));
@@ -58,6 +58,8 @@ class UserModel extends BaseModel {
         }
         throw customError(error);
       }
+    } else {
+      throw customError(new Error('UserModel.create() requires a valid strategy parameter.'));
     }
     return newUser;
   }

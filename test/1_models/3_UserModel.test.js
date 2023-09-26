@@ -80,11 +80,12 @@ describe('UserModel tests', () => {
           const testModel = new UserModel();
           let error;
           try {
-            await testModel.create(test, local);
+            await testModel.create(test, 'local');
           } catch (_error) {
             error = _error;
           }
-          assert.instanceOf(error, Error, `Test #${i + 1} failed`);
+          assert.instanceOf(error, Error, `Test #${i + 1} should throw an Error`);
+          assert.equal(error.code, 'VALIDATION', `Test #${i + 1} should throw a VALIDATION error`);
         }, Promise.resolve());
       });
     });
