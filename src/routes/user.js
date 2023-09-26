@@ -8,7 +8,7 @@ usersRouter.route('/')
     res.send(`Hi ${req.user.email}`);
   })
   .post(
-    validateBody(userSchema.localLogin),
+    validateBody(userSchema.tailor('localLogin')),
     async (req, res, next) => {
       const { email, password } = req.body;
       const userModel = new UserModel();
@@ -24,7 +24,7 @@ usersRouter.route('/')
 
 usersRouter.route('/login')
   .post(
-    validateBody(userSchema.localLogin),
+    validateBody(userSchema.tailor('localLogin')),
     passport.authenticate('local', {
       failureFlash: true,
       failureRedirect: '/user/login',

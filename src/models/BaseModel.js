@@ -4,8 +4,14 @@ const validationError = require('../utils/validationError');
 class BaseModel {
   constructor(tableName, schema) {
     this.tableName = tableName;
-    this.modelData = {};
     this.schema = schema;
+    this.modelData = {};
+    if (!tableName) {
+      throw new Error('A model requires a table name!');
+    }
+    if (!schema) {
+      throw new Error('A model requires a valid JOI schema!');
+    }
   }
 
   async findById(id) {
@@ -50,6 +56,7 @@ class BaseModel {
     if (!this.modelData || typeof this.modelData !== 'object') {
       throw new Error('Data must be an object.');
     }
+    this.validateData(data, this.schema.tailor('insert'));
     if (data !== this.modelData) {
       this.setModelData(data);
     }
@@ -76,7 +83,7 @@ class BaseModel {
     if (!data || typeof data !== 'object') {
       throw new Error('Data must be an object.');
     }
-    this.validateData(data, this.schema.post);
+    this.validateData(data);
     this.modelData = data;
     return this;
   }
@@ -85,8 +92,8 @@ class BaseModel {
     if (!data || typeof data !== 'object') {
       throw new Error('Data must be an object.');
     }
-    this.validateData({ ...this.modelData, ...data }, this.schema.post);
-    this.modelData = { ...this.modelData, ...data };
+    this.validateData(data, this.schema.tailor('update'));
+    this.setModelData({ ...this.modelData, ...data });
     return this;
   }
 
@@ -94,16 +101,17 @@ class BaseModel {
     return this.modelData;
   }
 
-  validateData(data, schema = this.schema.base) {
+  validateData(data, schema = this.schema) {
     const validationOptions = {
       abortEarly: false,
       allowUnknown: false,
       convert: false,
     };
-    const { error } = schema.validate(data, validationOptions);
+    const { value, error } = schema.validate(data, validationOptions);
     if (error) {
       throw validationError(error);
     }
+    return value;
   }
 
   async findMany(options = {}, values = []) {
@@ -136,6 +144,57 @@ class BaseModel {
     sqlQuery += ';';
 
     const { rowCount, rows } = await query(sqlQuery, values);
+    if (rowCount < 1) return [];
+    return rows;
+  }
+
+  async #updateRecords(queryObject, data = this.modelData) {
+    if (!this.modelData || typeof this.modelData !== 'object') {
+      throw new Error('Data must be an object.');
+    }
+    this.updateModelData(data);
+    this.validateData(queryObject);
+
+    const dataColumns = Object.keys(data);
+    const dataValues = Object.values(data);
+    const queryColumns = Object.keys(queryObject);
+    const queryValues = Object.values(queryObject);
+    const values = dataValues.concat(queryValues);
+    let valueCount = 0;
+
+    const setClause = dataColumns.map((columnName) => {
+      valueCount += 1;
+      return `${columnName}=$${valueCount}`;
+    }).join(', ');
+    const whereClause = queryColumns.map((columnName) => {
+      valueCount += 1;
+      return `${columnName} = $${valueCount}`;
+    }).join(' AND ');
+
+    const sqlQuery = `
+    UPDATE ${this.tableName}
+    SET ${setClause}
+    WHERE ${whereClause}
+    RETURNING *;
+    `;
+
+    return query(sqlQuery, values);
+  }
+
+  async findOneAndUpdate(queryObject, data = this.modelData) {
+    const findResult = await this.findOne(queryObject);
+    if (!findResult) return null;
+    if (!findResult.id) {
+      throw new Error(`Cannot find column id in ${this.tableName}.`);
+    }
+    const { rowCount, rows } = await this.#updateRecords({ id: findResult.id }, data);
+    if (rowCount < 1) return null;
+    this.setModelData(rows[0]);
+    return this.getModelData();
+  }
+
+  async findManyAndUpdate(queryObject, data = this.modelData) {
+    const { rowCount, rows } = await this.#updateRecords(queryObject, data);
     if (rowCount < 1) return [];
     return rows;
   }

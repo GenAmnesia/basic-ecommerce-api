@@ -1,32 +1,38 @@
 const Joi = require('joi');
 const BaseModel = require('./BaseModel');
+const customError = require('../utils/customError');
 
 const userSchemaKeys = {
-  id: Joi.number().integer(),
-  first_name: Joi.string().min(2).max(255),
-  last_name: Joi.string().min(2).max(255),
+  id: Joi.number().integer()
+    .alter({
+      insert: (schema) => schema.forbidden(),
+      update: (schema) => schema.forbidden(),
+    }),
+  first_name: Joi.string().min(2).max(255).allow(null),
+  last_name: Joi.string().min(2).max(255).allow(null),
   email: Joi.string().email()
-    .message('Invalid email provided'),
-  password: Joi.string().pattern(/^[a-zA-Z0-9]{3,30}$/)
-    .message('Passwords must have the following properties: - At least 3 characters. - At most 30 characters. - No symbols contained'),
-  google_id: Joi.string().max(255),
-  default_address: Joi.number().integer(),
-  created_at: Joi.date().forbidden(),
+    .message('Invalid email provided')
+    .alter({
+      insert: (schema) => schema.required(),
+      localLogin: (schema) => schema.required(),
+    }),
+  password: Joi.string().max(255).allow(null)
+    .message('Passwords must have the following properties: - At least 3 characters. - At most 30 characters. - No symbols contained')
+    .alter({
+      insert: (schema) => schema.required(),
+      localLogin: (schema) => schema.pattern(/^[a-zA-Z0-9]{3,30}$/).required(),
+    }),
+  google_id: Joi.string().max(255).allow(null),
+  google_token: Joi.string().max(255).allow(null),
+  default_address: Joi.number().integer().allow(null),
+  created_at: Joi.date()
+    .alter({
+      insert: (schema) => schema.forbidden(),
+      update: (schema) => schema.forbidden(),
+    }),
 };
 
-const userSchema = {
-  base: Joi.object(userSchemaKeys),
-  post: Joi.object({
-    ...userSchemaKeys,
-    id: userSchemaKeys.id.forbidden(),
-    email: userSchemaKeys.email.required(),
-  }),
-  localLogin: Joi.object({
-    ...userSchemaKeys,
-    email: userSchemaKeys.email.required(),
-    password: userSchemaKeys.password.required(),
-  }),
-};
+const userSchema = Joi.object(userSchemaKeys);
 
 class UserModel extends BaseModel {
   constructor() {
@@ -38,27 +44,22 @@ class UserModel extends BaseModel {
     return result;
   }
 
-  async createLocal(email, password) {
-    const data = { email, password };
-    try {
-      this.validateData(data, this.schema.localLogin);
-      const newUser = await this.setModelData(data).save();
-      return newUser;
-    } catch (error) {
-      Error.captureStackTrace(error);
-      if (error.code === '23505' && error.constraint === 'users_email_key') {
-        error.message = 'Email already exists.';
-        error.status = 400;
-      }
-      if (process.env.NODE_ENV === 'dev') {
-        throw error;
-      } else {
-        const customError = new Error(error.message);
-        customError.code = error.code;
-        customError.status = error.status || 500;
-        throw customError;
+  async create(data, strategy = 'local') {
+    let newUser;
+    if (strategy === 'local') {
+      this.validateData(data, this.schema.tailor('localLogin'));
+      try {
+        newUser = await this.insert(data);
+      } catch (error) {
+        Error.captureStackTrace(error);
+        if (error.code === '23505' && error.constraint === 'users_email_key') {
+          error.message = 'Email already exists.';
+          error.status = 400;
+        }
+        throw customError(error);
       }
     }
+    return newUser;
   }
 }
 
