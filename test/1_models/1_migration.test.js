@@ -1,6 +1,6 @@
 /* eslint no-undef: 0 */
 const chai = require('chai');
-const { query } = require('../../src/config/db');
+const { query } = require('../../src/services/DatabaseService');
 
 const { assert } = chai;
 require('dotenv').config();

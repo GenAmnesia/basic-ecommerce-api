@@ -2,7 +2,7 @@
 const chai = require('chai');
 const Joi = require('joi');
 const BaseModel = require('../../src/models/BaseModel');
-const { query } = require('../../src/config/db');
+const { query } = require('../../src/services/DatabaseService');
 
 const { assert } = chai;
 require('dotenv').config();

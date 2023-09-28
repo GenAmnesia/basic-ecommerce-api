@@ -1,4 +1,4 @@
-const { query } = require('../config/db');
+const { query } = require('../services/DatabaseService');
 const validationError = require('../utils/validationError');
 
 class BaseModel {

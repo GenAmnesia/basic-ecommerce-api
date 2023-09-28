@@ -15,17 +15,23 @@ const userSchemaKeys = {
     .alter({
       insert: (schema) => schema.required(),
       localLogin: (schema) => schema.required(),
+      localCreate: (schema) => schema.required(),
     }),
   password: Joi.string().max(255).allow(null)
     .message('Passwords must have the following properties: - At least 3 characters. - At most 30 characters. - No symbols contained')
     .alter({
       insert: (schema) => schema.required(),
       localLogin: (schema) => schema.pattern(/^[a-zA-Z0-9]{3,30}$/).required(),
+      localCreate: (schema) => schema.required(),
     }),
   google_id: Joi.string().max(255).allow(null),
   google_token: Joi.string().max(255).allow(null),
-  default_address: Joi.number().integer().allow(null),
-  created_at: Joi.date()
+  default_address: Joi.number().integer().allow(null)
+    .alter({
+      insert: (schema) => schema.forbidden(),
+      localCreate: (schema) => schema.forbidden(),
+    }),
+  created_at: Joi.date().timestamp()
     .alter({
       insert: (schema) => schema.forbidden(),
       update: (schema) => schema.forbidden(),
@@ -47,7 +53,7 @@ class UserModel extends BaseModel {
   async create(data, strategy) {
     let newUser;
     if (strategy === 'local') {
-      this.validateData(data, this.schema.tailor('localLogin'));
+      this.validateData(data, this.schema.tailor('localCreate'));
       try {
         newUser = await this.insert(data);
       } catch (error) {

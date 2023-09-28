@@ -1,5 +1,5 @@
 /* eslint no-undef: 0 */
-const { pool } = require('../src/config/db');
+const { pool } = require('../src/services/DatabaseService');
 const { createTestDatabase, dropTestDatabase } = require('../scripts/database');
 require('dotenv').config();
 

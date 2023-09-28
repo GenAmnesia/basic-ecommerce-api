@@ -3,7 +3,7 @@ const chai = require('chai');
 const fs = require('fs');
 const path = require('path');
 const { UserModel } = require('../../src/models/UserModel');
-const { query } = require('../../src/config/db');
+const { query } = require('../../src/services/DatabaseService');
 
 const { assert } = chai;
 require('dotenv').config();

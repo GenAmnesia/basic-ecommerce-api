@@ -1,9 +1,9 @@
 INSERT INTO users (first_name, last_name, email, password, google_id, google_token, default_address, created_at)
 VALUES
-  ('John', 'Doe', 'john.doe@example.com', 'hashed_password', NULL, NULL, NULL, CURRENT_TIMESTAMP),
-  ('Jane', 'Smith', 'jane.smith@example.com', 'hashed_password', NULL, NULL, NULL, CURRENT_TIMESTAMP),
-  ('Alice', 'Johnson', 'alice.johnson@example.com', 'hashed_password', 'google_id_1', 'google_token_1', NULL, CURRENT_TIMESTAMP),
-  ('Bob', 'Williams', 'bob.williams@example.com', 'hashed_password', 'google_id_2', 'google_token_2', NULL, CURRENT_TIMESTAMP);
+  ('John', 'Doe', 'john.doe@example.com', '$2b$10$7tmiVXKRimYEwQd9PQo/rOB2Kol/K.5fTAqoWIZlDFWZocHoSgFHC', NULL, NULL, NULL, CURRENT_TIMESTAMP),
+  ('Jane', 'Smith', 'jane.smith@example.com', '$2b$10$7tmiVXKRimYEwQd9PQo/rOB2Kol/K.5fTAqoWIZlDFWZocHoSgFHC', NULL, NULL, NULL, CURRENT_TIMESTAMP),
+  ('Alice', 'Johnson', 'alice.johnson@example.com', '$2b$10$7tmiVXKRimYEwQd9PQo/rOB2Kol/K.5fTAqoWIZlDFWZocHoSgFHC', 'google_id_1', 'google_token_1', NULL, CURRENT_TIMESTAMP),
+  ('Bob', 'Williams', 'bob.williams@example.com', '$2b$10$7tmiVXKRimYEwQd9PQo/rOB2Kol/K.5fTAqoWIZlDFWZocHoSgFHC', 'google_id_2', 'google_token_2', NULL, CURRENT_TIMESTAMP);
 
 INSERT INTO shipping_addresses (user_id, recipient_name, street_address, city, state_province, postal_code, country, phone_number, notes, created_at)
 VALUES
