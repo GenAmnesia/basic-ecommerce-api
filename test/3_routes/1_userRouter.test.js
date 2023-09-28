@@ -29,8 +29,7 @@ describe('/user routes', () => {
       } catch (_err) { error = _err; }
       assert.isNotOk(error);
       assert.equal(res.status, 200);
-      const redirectedUrl = new URL(res.redirects[0]);
-      assert.include(redirectedUrl.pathname, '/user');
+      assert.equal(res.body.message, 'Login successful');
     });
     it('Returns 401 on invalid credentials', async () => {
       let res;
