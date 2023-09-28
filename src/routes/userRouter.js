@@ -24,11 +24,9 @@ userRouter.route('/login')
     UserController.localLogin(),
   );
 
-userRouter.get('/logout', (req, res, next) => {
-  req.logout((err) => {
-    if (err) return next(err);
-    return res.redirect('/');
-  });
-});
+userRouter.post(
+  '/logout',
+  UserController.logout,
+);
 
 module.exports = userRouter;

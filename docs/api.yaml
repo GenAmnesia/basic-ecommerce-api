@@ -691,7 +691,7 @@ paths:
           description: User Not Found
   
   /user/login:
-    get:
+    post:
       tags:
         - user
       summary: Logs user into the system
@@ -702,7 +702,7 @@ paths:
           description: Invalid username/password
           
   /user/logout:
-    get:
+    post:
       tags:
         - user
       summary: Logs out current logged in user session

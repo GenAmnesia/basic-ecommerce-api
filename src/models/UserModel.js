@@ -7,9 +7,17 @@ const userSchemaKeys = {
     .alter({
       insert: (schema) => schema.forbidden(),
       update: (schema) => schema.forbidden(),
+      localLogin: (schema) => schema.forbidden(),
+      localCreate: (schema) => schema.forbidden(),
     }),
-  first_name: Joi.string().min(2).max(255).allow(null),
-  last_name: Joi.string().min(2).max(255).allow(null),
+  first_name: Joi.string().min(2).max(255).allow(null)
+    .alter({
+      localLogin: (schema) => schema.forbidden(),
+    }),
+  last_name: Joi.string().min(2).max(255).allow(null)
+    .alter({
+      localLogin: (schema) => schema.forbidden(),
+    }),
   email: Joi.string().email()
     .message('Invalid email provided')
     .alter({
@@ -24,12 +32,19 @@ const userSchemaKeys = {
       localLogin: (schema) => schema.pattern(/^[a-zA-Z0-9]{3,30}$/).required(),
       localCreate: (schema) => schema.required(),
     }),
-  google_id: Joi.string().max(255).allow(null),
-  google_token: Joi.string().max(255).allow(null),
+  google_id: Joi.string().max(255).allow(null)
+    .alter({
+      localLogin: (schema) => schema.forbidden(),
+    }),
+  google_token: Joi.string().max(255).allow(null)
+    .alter({
+      localLogin: (schema) => schema.forbidden(),
+    }),
   default_address: Joi.number().integer().allow(null)
     .alter({
       insert: (schema) => schema.forbidden(),
       localCreate: (schema) => schema.forbidden(),
+      localLogin: (schema) => schema.forbidden(),
     }),
   created_at: Joi.date().timestamp()
     .alter({
