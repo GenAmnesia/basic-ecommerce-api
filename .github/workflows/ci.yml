@@ -26,6 +26,7 @@ jobs:
       - name: Run Tests
         run: npm test
         env:
+          SESSION_SECRET: f4z4gs$Gcg
           DB_HOST: postgres
           DB_PORT: 5432
           DB_USERNAME: postgres
