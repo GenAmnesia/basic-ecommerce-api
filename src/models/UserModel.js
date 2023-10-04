@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const BaseModel = require('./BaseModel');
 const customError = require('../utils/customError');
+const { query } = require('../services/DatabaseService');
 
 const userSchemaKeys = {
   id: Joi.number().integer()
@@ -84,6 +85,41 @@ class UserModel extends BaseModel {
     }
     return newUser;
   }
+
+  async getProfileById(id = this.id) {
+    const { rows, rowCount } = await query(`
+    SELECT
+      u.id, u.first_name, u.last_name, u.email, u.google_id, u.default_address, u.created_at,
+      a.id as address_id, a.recipient_name, a.street_address, a.city, a.state_province, a.postal_code, a.country,
+      a.phone_number, a.notes, a.created_at as address_created_at
+    FROM users AS u
+    LEFT JOIN shipping_addresses AS a ON u.default_address = a.id
+    WHERE u.id = $1;
+    `, [id]);
+    if (rowCount < 1) return null;
+    const r = rows[0];
+    const default_address = r.default_address ? {
+      id: r.address_id,
+      recipient_name: r.recipient_name,
+      street_address: r.street_address,
+      city: r.city,
+      state_province: r.state_province,
+      postal_code: r.postal_code,
+      country: r.country,
+      phone_number: r.phone_number,
+      notes: r.notes,
+      created_at: r.address_created_at,
+    } : null;
+    return {
+      id: r.id,
+      first_name: r.first_name,
+      last_name: r.last_name,
+      email: r.email,
+      google_id: r.google_id,
+      default_address,
+      created_at: r.created_at,
+    };
+  }
 }
 
-module.exports = { userSchema, UserModel };
+module.exports = { userSchemaKeys, userSchema, UserModel };

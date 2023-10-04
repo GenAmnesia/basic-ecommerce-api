@@ -2,6 +2,9 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 const LocalStrategy = require('passport-local').Strategy;
 const customError = require('../utils/customError');
+const { userSchemaKeys } = require('../models/UserModel');
+const validationError = require('../utils/validationError');
+const { query } = require('./DatabaseService');
 
 class UserService {
   constructor(userModel) {
@@ -45,6 +48,7 @@ class UserService {
     passport.deserializeUser(async (id, done) => {
       try {
         const user = await this.userModel.findById(id);
+        user.isAdmin = await UserService.isAdmin(id);
         done(null, user);
       } catch (error) {
         done(error);
@@ -68,6 +72,28 @@ class UserService {
       const createdUser = await this.userModel.create(newUser, 'local');
       return createdUser;
     } catch (error) { throw customError(error); }
+  };
+
+  static isAdmin = async (id) => {
+    const { error: idValidationError } = userSchemaKeys.id.validate(id, {
+      allowUnknown: false,
+      convert: false,
+    });
+    if (idValidationError) throw validationError(idValidationError);
+    const { rows, rowCount } = await query('SELECT * FROM admins WHERE user_id = $1 LIMIT 1;', [id]);
+    if (rowCount > 0 && rows[0].user_id === id) return true;
+    return false;
+  };
+
+  getProfile = async (id) => {
+    const { error: idValidationError } = userSchemaKeys.id.validate(id, {
+      allowUnknown: false,
+      convert: false,
+    });
+    if (idValidationError) throw validationError(idValidationError);
+
+    const userProfile = await this.userModel.getProfileById(id);
+    return userProfile;
   };
 }
 

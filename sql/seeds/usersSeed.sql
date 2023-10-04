@@ -12,8 +12,15 @@ VALUES
   (3, 'Alice Johnson', '789 Oak St', 'London', 'LN', 'EC1A 1BB', 'uk', '44-20-1234-5678', NULL, CURRENT_TIMESTAMP),
   (4, 'Bob Williams', '101 Maple St', 'Rome', 'RM', '00118', 'it', '+39 06 1234 5678', NULL, CURRENT_TIMESTAMP);
 
--- Aggiorna i default_address degli utenti
+-- Update the default_address of created users
 UPDATE users
 SET default_address = sa.id
 FROM shipping_addresses sa
 WHERE CONCAT(users.first_name, ' ', users.last_name) = sa.recipient_name;
+
+-- Set John Doe as admin
+WITH user_id_cte AS (
+  SELECT u.id FROM users u WHERE u.email = 'john.doe@example.com'
+)
+INSERT INTO admins
+SELECT id FROM user_id_cte;

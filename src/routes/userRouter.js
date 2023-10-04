@@ -3,6 +3,7 @@ const { userSchema, UserModel } = require('../models/UserModel');
 const validateBody = require('../middlewares/validateBody');
 const UserService = require('../services/UserService');
 const UserController = require('../controllers/UserController');
+const isAuthenticated = require('../middlewares/isAuthenticated');
 
 const userModel = new UserModel();
 const userService = new UserService(userModel);
@@ -10,9 +11,10 @@ userService.initializePassport();
 const userController = new UserController(userService);
 
 userRouter.route('/')
-  .get((req, res) => {
-    res.send('Hi');
-  })
+  .get(
+    isAuthenticated,
+    userController.getProfile,
+  )
   .post(
     validateBody(userSchema.tailor('localCreate')),
     userController.register,
@@ -24,9 +26,7 @@ userRouter.route('/login')
     UserController.localLogin(),
   );
 
-userRouter.post(
-  '/logout',
-  UserController.logout,
-);
+userRouter.route('/logout')
+  .post(UserController.logout);
 
 module.exports = userRouter;

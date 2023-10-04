@@ -9,6 +9,7 @@ services:
         npm test
       "
     environment:
+      SESSION_SECRET: f4z4gs$Gcg
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: postgres

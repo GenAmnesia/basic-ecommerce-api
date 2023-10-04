@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { UserModel } = require('../../src/models/UserModel');
 const { query } = require('../../src/services/DatabaseService');
+const removeCreatedAtAndId = require('../../src/utils/removeCreatedAtAndId');
 
 const { assert } = chai;
 require('dotenv').config();
@@ -88,6 +89,53 @@ describe('UserModel tests', () => {
           assert.equal(error.code, 'VALIDATION', `Test #${i + 1} should throw a VALIDATION error`);
         }, Promise.resolve());
       });
+    });
+  });
+  describe('getProfileById', () => {
+    it('Correctly returns a user profile', async () => {
+      const userModel = new UserModel();
+      const res1 = await userModel.getProfileById(1);
+      const expectedRes1 = {
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john.doe@example.com',
+        google_id: null,
+        default_address: {
+          recipient_name: 'John Doe',
+          street_address: '123 Main St',
+          city: 'New York',
+          state_province: 'NY',
+          postal_code: '10001',
+          country: 'eu',
+          phone_number: '123-456-7890',
+          notes: 'Note 1',
+        },
+      };
+
+      assert.deepEqual(removeCreatedAtAndId(res1), expectedRes1);
+      const res2 = await userModel.getProfileById(2);
+      const expectedRes2 = {
+        first_name: 'Jane',
+        last_name: 'Smith',
+        email: 'jane.smith@example.com',
+        google_id: null,
+        default_address: {
+          recipient_name: 'Jane Smith',
+          street_address: '456 Elm St',
+          city: 'Los Angeles',
+          state_province: 'CA',
+          postal_code: '90001',
+          country: 'eu',
+          phone_number: '987-654-3210',
+          notes: 'Note 2',
+        },
+      };
+      assert.deepEqual(removeCreatedAtAndId(res2), expectedRes2);
+    });
+    it('Returns null if no user is found', async () => {
+      const userModel = new UserModel();
+      const res = await userModel.getProfileById(213);
+      assert.isNull(res);
     });
   });
 });
